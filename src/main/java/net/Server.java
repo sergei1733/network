@@ -38,10 +38,17 @@ class SimpleServer extends Thread{
             BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
 
+
+            String request = br.readLine();
+            String[] lines = request.split("\\s+");
+            String command = lines[0];
+            String userName = lines[1];
+
+            System.out.println("server got string 1" + command);
+            System.out.println("server got string 2" + userName);
+
             StringBuilder sb = new StringBuilder("Hello, ");
-            String userName = br.readLine();
-            System.out.println("server got string " + userName);
-            Thread.sleep(2000);
+            //Thread.sleep(2000);
             sb.append(userName);
             bw.write(sb.toString());
             bw.newLine();
@@ -54,5 +61,9 @@ class SimpleServer extends Thread{
         }catch (Exception ex){
             ex.printStackTrace(System.out);
         }
+    }
+
+    private String buildResponse(){
+        return "";
     }
 }
