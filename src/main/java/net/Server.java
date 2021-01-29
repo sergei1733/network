@@ -82,10 +82,9 @@ class SimpleServer extends Thread {
             System.out.println("server got string 1" + command);
             System.out.println("server got string 2" + userName);
 
-            StringBuilder sb = new StringBuilder("Hello, ");
-            //Thread.sleep(2000);
-            sb.append(userName);
-            bw.write(sb.toString());
+
+            String response = buildResponse(command, userName);
+
             bw.newLine();
             bw.flush();
 
@@ -98,7 +97,11 @@ class SimpleServer extends Thread {
         }
     }
 
-    private String buildResponse() {
-        return "";
+    private String buildResponse(String command, String userName) {
+        Greetable handler = handlers.get(command);
+        if(handler != null){
+            return handler.buildResponse(userName);
+        }
+        return "Hello, " + userName;
     }
 }
