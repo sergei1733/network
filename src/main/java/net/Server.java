@@ -84,7 +84,7 @@ class SimpleServer extends Thread {
 
 
             String response = buildResponse(command, userName);
-
+            bw.write(response);
             bw.newLine();
             bw.flush();
 
