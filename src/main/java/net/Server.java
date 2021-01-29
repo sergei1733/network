@@ -4,18 +4,50 @@ package net;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Properties;
 
 public class Server {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
         ServerSocket socket = new ServerSocket(25225);
+
+        Map<String, Greetable> handlers = loadHandlers();
+
         System.out.println("Server is started ");
-        while (true){
+        while (true) {
             Socket client = socket.accept();
-            new SimpleServer(client).start();
+            new SimpleServer(client,handlers).start();
 
         }
+    }
+
+    private static Map<String, Greetable> loadHandlers() {
+
+        Map<String, Greetable> result = new HashMap<>();
+
+        try(InputStream is = Server.class.getClassLoader().getResourceAsStream("server.properrties")){
+
+            Properties properties = new Properties();
+            properties.load(is);
+
+            for (Object command : properties.keySet()){
+                String className = properties.getProperty(command.toString());
+                Class<Greetable> cl = (Class<Greetable>) Class.forName(className);
+
+                Greetable handler = cl.getConstructor().newInstance();
+                result.put(command.toString(),handler);
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
     private static void handleRequest(Socket client) throws IOException, InterruptedException {
@@ -23,18 +55,21 @@ public class Server {
     }
 }
 
-class SimpleServer extends Thread{
+class SimpleServer extends Thread {
     private Socket client;
-
-    public SimpleServer (Socket client){
+    private Map<String,Greetable> handlers;
+    public SimpleServer(Socket client, Map<String, Greetable> handlers) {
         this.client = client;
+        this.handlers = handlers;
     }
+
     @Override
-    public void run(){
+    public void run() {
         handleRequest();
     }
-    private void handleRequest(){
-        try{
+
+    private void handleRequest() {
+        try {
             BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
 
@@ -58,12 +93,12 @@ class SimpleServer extends Thread{
             bw.close();
 
             client.close();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace(System.out);
         }
     }
 
-    private String buildResponse(){
+    private String buildResponse() {
         return "";
     }
 }
